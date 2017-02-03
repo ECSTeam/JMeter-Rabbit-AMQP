@@ -16,6 +16,7 @@ import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.ConfirmListener;
 
 /**
  * JMeter creates an instance of a sampler class for every occurrence of the
@@ -48,6 +49,10 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
     public static boolean DEFAULT_USE_TX = false;
     private final static String USE_TX = "AMQPConsumer.UseTx";
+
+    //cm
+    public static boolean DEFAULT_USE_CONFIRMATION = false;
+    private final static String USE_CONFIRMATION = "AMQPProducer.UseConfirmation";
 
     private transient Channel channel;
 
@@ -175,11 +180,11 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     public String getContentType() {
     	return getPropertyAsString(CONTENT_TYPE);
     }
-    
+
     public void setContentType(String contentType) {
     	setProperty(CONTENT_TYPE, contentType);
     }
-    
+
     /**
      * @return the correlation identifier for the sample
      */
@@ -226,6 +231,16 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
        setProperty(USE_TX, tx);
     }
 
+    // cm
+    public Boolean getUseConfirmation() {
+        return getPropertyAsBoolean(USE_CONFIRMATION, DEFAULT_USE_CONFIRMATION);
+    }
+
+    public void setUseConfirmation (Boolean conf) {
+        log.info("##########  Setting useConfirmation to " + conf + "  ##########");
+        setProperty(USE_CONFIRMATION, conf);
+    }
+
     @Override
     public boolean interrupt() {
         cleanup();
@@ -247,7 +262,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
         final int deliveryMode = getPersistent() ? 2 : 1;
         final String contentType = StringUtils.defaultIfEmpty(getContentType(), "text/plain");
-        
+
         builder.contentType(contentType)
             .deliveryMode(deliveryMode)
             .priority(0)
@@ -267,6 +282,12 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         if (getUseTx()) {
             channel.txSelect();
         }
+        //cm
+        else if (getUseConfirmation()) {
+            log.info("##########  Adding confirmation listener.  ##########");
+            channel.addConfirmListener(new RMQConfirmListener());
+            channel.confirmSelect();
+        }
         return ret;
     }
 
@@ -277,5 +298,23 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
             result.put(item.getKey(), item.getValue());
         }
         return result;
+    }
+
+    //cm
+    class RMQConfirmListener implements ConfirmListener {
+
+      public void handleAck(long deliveryTag, boolean multiple) {
+
+          log.info("##########  Received publisher confirmation ACK.  ##########");
+          log.info("##########  deliveryTag: " + deliveryTag + "  ##########");
+          log.info("##########  multiple: " + multiple + "  ##########");
+      }
+
+      public void handleNack(long deliveryTag, boolean multiple) {
+
+          log.info("##########  Received publisher confirmation NACK.  ##########");
+          log.info("##########  deliveryTag: " + deliveryTag + "  ##########");
+          log.info("##########  multiple: " + multiple + "  ##########");
+      }
     }
 }
