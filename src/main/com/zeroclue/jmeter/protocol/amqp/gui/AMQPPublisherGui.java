@@ -43,6 +43,8 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
 
     private JCheckBox persistent = new JCheckBox("Persistent?", AMQPPublisher.DEFAULT_PERSISTENT);
     private JCheckBox useTx = new JCheckBox("Use Transactions?", AMQPPublisher.DEFAULT_USE_TX);
+    //cm
+    private JCheckBox useConfirmation = new JCheckBox("Use Confirmations?", AMQPPublisher.DEFAULT_USE_CONFIRMATION);
 
     private ArgumentsPanel headers = new ArgumentsPanel("Headers");
 
@@ -73,7 +75,10 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         AMQPPublisher sampler = (AMQPPublisher) element;
 
         persistent.setSelected(sampler.getPersistent());
+
+        //cm
         useTx.setSelected(sampler.getUseTx());
+        useConfirmation.setSelected(sampler.getUseConfirmation());
 
         messageRoutingKey.setText(sampler.getMessageRoutingKey());
         messageType.setText(sampler.getMessageType());
@@ -107,7 +112,10 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         super.modifyTestElement(sampler);
 
         sampler.setPersistent(persistent.isSelected());
+
+        // cm
         sampler.setUseTx(useTx.isSelected());
+        sampler.setUseConfirmation(useConfirmation.isSelected());
 
         sampler.setMessageRoutingKey(messageRoutingKey.getText());
         sampler.setMessage(message.getText());
@@ -132,6 +140,8 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         super.init();
         persistent.setPreferredSize(new Dimension(100, 25));
         useTx.setPreferredSize(new Dimension(100, 25));
+        //cm
+        useConfirmation.setPreferredSize(new Dimension(100,25));
         messageRoutingKey.setPreferredSize(new Dimension(100, 25));
         messageType.setPreferredSize(new Dimension(100, 25));
         replyToQueue.setPreferredSize(new Dimension(100, 25));
@@ -142,6 +152,8 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
 
         mainPanel.add(persistent);
         mainPanel.add(useTx);
+        //cm
+        mainPanel.add(useConfirmation);
         mainPanel.add(messageRoutingKey);
         mainPanel.add(messageType);
         mainPanel.add(replyToQueue);
@@ -160,6 +172,8 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         super.clearGui();
         persistent.setSelected(AMQPPublisher.DEFAULT_PERSISTENT);
         useTx.setSelected(AMQPPublisher.DEFAULT_USE_TX);
+        //cm
+        useConfirmation.setSelected(AMQPPublisher.DEFAULT_USE_CONFIRMATION);
         messageRoutingKey.setText("");
         messageType.setText("");
         replyToQueue.setText("");
