@@ -280,11 +280,16 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
         boolean ret = super.initChannel();
         if (getUseTx()) {
+          log.info("###########################################");
+          log.info("###  Acknowledgement Mode: Transaction  ###");
+          log.info("###########################################");
             channel.txSelect();
         }
         //cm
         else if (getUseConfirmation()) {
-            log.info("##########  Adding confirmation listener.  ##########");
+            log.info("############################################");
+            log.info("###  Acknowledgement Mode: Confirmation  ###");
+            log.info("############################################");
             channel.addConfirmListener(new RMQConfirmListener());
             channel.confirmSelect();
         }
@@ -305,16 +310,20 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
       public void handleAck(long deliveryTag, boolean multiple) {
 
-          log.info("##########  Received publisher confirmation ACK.  ##########");
-          log.info("##########  deliveryTag: " + deliveryTag + "  ##########");
-          log.info("##########  multiple: " + multiple + "  ##########");
+          log.info("##############################################");
+          log.info("###  Received publisher confirmation ACK.");
+          log.info("###  deliveryTag: " + deliveryTag);
+          log.info("###  multiple: " + multiple);
+          log.info("##############################################");
       }
 
       public void handleNack(long deliveryTag, boolean multiple) {
 
-          log.info("##########  Received publisher confirmation NACK.  ##########");
-          log.info("##########  deliveryTag: " + deliveryTag + "  ##########");
-          log.info("##########  multiple: " + multiple + "  ##########");
+          log.info("###############################################");
+          log.info("###  Received publisher confirmation NACK.");
+          log.info("###  deliveryTag: " + deliveryTag);
+          log.info("###  multiple: " + multiple);
+          log.info("###############################################");
       }
     }
 }

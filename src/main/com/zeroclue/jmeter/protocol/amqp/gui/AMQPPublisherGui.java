@@ -3,6 +3,8 @@ package com.zeroclue.jmeter.protocol.amqp.gui;
 import java.awt.Dimension;
 
 import javax.swing.*;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
 
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.config.gui.ArgumentsPanel;
@@ -42,9 +44,16 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     private JLabeledTextField messageId = new JLabeledTextField("Message Id");
 
     private JCheckBox persistent = new JCheckBox("Persistent?", AMQPPublisher.DEFAULT_PERSISTENT);
+
+
     private JCheckBox useTx = new JCheckBox("Use Transactions?", AMQPPublisher.DEFAULT_USE_TX);
     //cm
     private JCheckBox useConfirmation = new JCheckBox("Use Confirmations?", AMQPPublisher.DEFAULT_USE_CONFIRMATION);
+
+    private ButtonGroup ackModes = new ButtonGroup();
+    private JRadioButton noAcknowledgementButton = new JRadioButton("None", true);
+    private JRadioButton useTxButton = new JRadioButton("Use Transactions");
+    private JRadioButton useConfirmationButton = new JRadioButton("Use Confirmations");
 
     private ArgumentsPanel headers = new ArgumentsPanel("Headers");
 
@@ -75,10 +84,8 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         AMQPPublisher sampler = (AMQPPublisher) element;
 
         persistent.setSelected(sampler.getPersistent());
-
-        //cm
-        useTx.setSelected(sampler.getUseTx());
-        useConfirmation.setSelected(sampler.getUseConfirmation());
+        useTxButton.setSelected(sampler.getUseTx());
+        useConfirmationButton.setSelected(sampler.getUseConfirmation());
 
         messageRoutingKey.setText(sampler.getMessageRoutingKey());
         messageType.setText(sampler.getMessageType());
@@ -112,10 +119,8 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         super.modifyTestElement(sampler);
 
         sampler.setPersistent(persistent.isSelected());
-
-        // cm
-        sampler.setUseTx(useTx.isSelected());
-        sampler.setUseConfirmation(useConfirmation.isSelected());
+        sampler.setUseTx(useTxButton.isSelected());
+        sampler.setUseConfirmation(useConfirmationButton.isSelected());
 
         sampler.setMessageRoutingKey(messageRoutingKey.getText());
         sampler.setMessage(message.getText());
@@ -139,9 +144,6 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     protected final void init() {
         super.init();
         persistent.setPreferredSize(new Dimension(100, 25));
-        useTx.setPreferredSize(new Dimension(100, 25));
-        //cm
-        useConfirmation.setPreferredSize(new Dimension(100,25));
         messageRoutingKey.setPreferredSize(new Dimension(100, 25));
         messageType.setPreferredSize(new Dimension(100, 25));
         replyToQueue.setPreferredSize(new Dimension(100, 25));
@@ -149,11 +151,8 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         contentType.setPreferredSize(new Dimension(100, 25));
         messageId.setPreferredSize(new Dimension(100, 25));
         message.setPreferredSize(new Dimension(400, 150));
-
         mainPanel.add(persistent);
-        mainPanel.add(useTx);
-        //cm
-        mainPanel.add(useConfirmation);
+        mainPanel.add(createAckPanel());
         mainPanel.add(messageRoutingKey);
         mainPanel.add(messageType);
         mainPanel.add(replyToQueue);
@@ -164,6 +163,29 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         mainPanel.add(message);
     }
 
+    private JPanel createAckPanel () {
+
+        JPanel ackPanel = new JPanel();
+        ackPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Publisher Acknowledgement Modes"));
+        ackModes.add(noAcknowledgementButton);
+        ackModes.add(useTxButton);
+        ackModes.add(useConfirmationButton);
+
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        gridBagConstraints.fill = GridBagConstraints.NONE;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+
+        ackPanel.add(noAcknowledgementButton, gridBagConstraints);
+        ackPanel.add(useTxButton);
+        ackPanel.add(useConfirmationButton);
+
+        return ackPanel;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -171,9 +193,6 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     public void clearGui() {
         super.clearGui();
         persistent.setSelected(AMQPPublisher.DEFAULT_PERSISTENT);
-        useTx.setSelected(AMQPPublisher.DEFAULT_USE_TX);
-        //cm
-        useConfirmation.setSelected(AMQPPublisher.DEFAULT_USE_CONFIRMATION);
         messageRoutingKey.setText("");
         messageType.setText("");
         replyToQueue.setText("");
